@@ -42,7 +42,7 @@ class ArticleException(Exception):
 class Article(object):
     """Article objects abstract an online news article page
     """
-    def __init__(self, url, title='', source_url='', config=None, **kwargs):
+    def __init__(self, url, title='', use_playwright=False ,source_url='', config=None, **kwargs):
         """The **kwargs argument may be filled with config values, which
         is added into the config object
         """
@@ -72,6 +72,9 @@ class Article(object):
         self.url = urls.prepare_url(url, self.source_url)
 
         self.title = title
+
+        # Use gives permission to use playwright or not
+        self.use_playwright = use_playwright
 
         # URL of the "best image" to represent this article
         self.top_img = self.top_image = ''
@@ -173,6 +176,8 @@ class Article(object):
 
     def _parse_scheme_http(self):
         try:
+            if self.use_playwright:
+                return network.playwright_html(self.url)
             return network.get_html_2XX_only(self.url, self.config)
         except requests.exceptions.RequestException as e:
             self.download_state = ArticleDownloadState.FAILED_RESPONSE
