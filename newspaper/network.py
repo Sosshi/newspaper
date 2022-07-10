@@ -11,6 +11,8 @@ __copyright__ = 'Copyright 2014, Lucas Ou-Yang'
 import logging
 import requests
 
+from playwright.sync_api import sync_playwright
+
 from .configuration import Configuration
 from .mthreading import ThreadPool
 from .settings import cj
@@ -43,6 +45,17 @@ def get_html(url, config=None, response=None):
         log.debug('get_html() error. %s on URL: %s' % (e, url))
         return ''
 
+def playwright_html(url):
+    """runs javascript code and then returns the content"""
+    content = ""
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto(url)
+        page.wait_for_load_state()
+        content = page.content()
+        browser.close()
+    return content
 
 def get_html_2XX_only(url, config=None, response=None):
     """Consolidated logic for http requests from newspaper. We handle error cases:
